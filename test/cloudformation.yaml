@@ -1,0 +1,28 @@
+---
+Description: Test Stack for cfn-stack
+Parameters:
+  Env:
+    Type: String
+
+Outputs:
+  Role:
+    Value: !Ref SomeRole
+
+Resources:
+  SomeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${Env}-cfn-stack-test
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+      Policies:
+        - PolicyName: DenySomething
+          PolicyDocument:
+            Statement:
+              - Effect: Deny
+                Action: 'cognito-identity:*'
+                Resource: '*'
