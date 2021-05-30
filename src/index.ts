@@ -15,7 +15,7 @@ export type StackOptions = {
 export class Stack {
   constructor({ name, region, profile }: StackOptions) {
     this.stack = { StackName: name }
-    const credentials = Stack.getCredentials(profile)
+    const credentials = getCredentials(profile)
     this.cloudformation = new CloudFormation({ region, credentials })
   }
 
@@ -46,22 +46,14 @@ export class Stack {
       this.logStackAction(now, 'Updating stack')
       await this.waitFor('UPDATE_COMPLETE', now)
     } catch (err) {
-      if (Stack.doesNotExist(err)) {
+      if (stackDoesNotExist(err)) {
         await this.cloudformation.createStack({ OnFailure: 'DELETE', ...stackInput }).promise()
         this.logStackAction(now, 'Creating new stack')
         await this.waitFor('CREATE_COMPLETE', now)
-      } else if (Stack.isUpToDate(err)) {
+      } else if (stackIsUpToDate(err)) {
         this.logStackAction(now, 'No updates needed for stack')
       } else throw err
     }
-  }
-
-  private static doesNotExist(err: AWSError): boolean {
-    return err.code === 'ValidationError' && err.message.includes('does not exist')
-  }
-
-  private static isUpToDate(err: AWSError): boolean {
-    return err.code === 'ValidationError' && err.message.includes('No updates are to be performed')
   }
 
   async waitFor(success: ResourceStatus, start: Date): Promise<void> {
@@ -118,16 +110,24 @@ export class Stack {
     this.logStackAction(now, 'Deleting stack')
     await this.waitFor('DELETE_COMPLETE', now)
   }
+}
 
-  private static getCredentials(profile?: string) {
-    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
-      return new EnvironmentCredentials('AWS')
+function stackDoesNotExist(err: AWSError): boolean {
+  return err.code === 'ValidationError' && err.message.includes('does not exist')
+}
 
-    if (process.env.USER === 'ec2-user') return new EC2MetadataCredentials()
+function stackIsUpToDate(err: AWSError): boolean {
+  return err.code === 'ValidationError' && err.message.includes('No updates are to be performed')
+}
 
-    process.env.AWS_SDK_LOAD_CONFIG = 'true' // This is necessary to load profiles from ~/.aws/config
-    return new SharedIniFileCredentials({ profile })
-  }
+function getCredentials(profile?: string) {
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
+    return new EnvironmentCredentials('AWS')
+
+  if (process.env.USER === 'ec2-user') return new EC2MetadataCredentials()
+
+  process.env.AWS_SDK_LOAD_CONFIG = 'true' // This is necessary to load profiles from ~/.aws/config
+  return new SharedIniFileCredentials({ profile })
 }
 
 function logEvent(e: StackEvent) {
