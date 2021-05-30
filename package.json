@@ -11,18 +11,19 @@
     "stack": "ts-node -T test/stack.ts"
   },
   "author": "atombrenner@gmail.com",
-  "license": "SEE LICENSE IN <undefined>",
+  "license": "GPL-3.0-or-later",
   "engines": {
-    "node": ">=10.0.0",
+    "node": ">=12.0.0",
     "npm": ">=6.0.0"
   },
   "dependencies": {
-    "aws-sdk": "^2.543.0",
+    "aws-sdk": "^2.918.0",
     "word-wrap": "^1.2.3"
   },
   "devDependencies": {
-    "@types/node": "^10.14.20",
-    "ts-node": "^8.4.1",
-    "typescript": "^3.6.3"
+    "@types/node": "^12.20.13",
+    "prettier": "^2.3.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
   }
 }
