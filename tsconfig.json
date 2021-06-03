@@ -1,20 +1,6 @@
 {
+  "extends": "@tsconfig/node14",
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
-    "declaration": true,
-    "declarationDir": "./dist",
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": true,
-    "inlineSourceMap": false,
-    "inlineSources": false,
-    "strictPropertyInitialization": false,
-    "forceConsistentCasingInFileNames": true,
     "outDir": "./dist"
   },
   "include": ["src/**/*"],

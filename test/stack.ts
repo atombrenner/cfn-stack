@@ -1,8 +1,9 @@
 import { Stack, sleep } from '../src/index'
-import * as fs from 'fs'
-;(async () => {
+import { readFileSync } from 'fs'
+
+async function main() {
   const stack = new Stack({ name: 'cfn-stack-test', region: 'eu-west-1', profile: 'atombrenner' })
-  const template = fs.readFileSync('./test/cloudformation.yaml', { encoding: 'utf-8' })
+  const template = readFileSync('./test/cloudformation.yaml', { encoding: 'utf-8' })
 
   // create stack and log events
   await stack.createOrUpdate(template, { Env: 'test1' })
@@ -20,7 +21,9 @@ import * as fs from 'fs'
 
   // delete stack
   await stack.delete()
-})().catch((err) => {
+}
+
+main().catch((err) => {
   console.error(err.message)
   process.exit(1)
 })

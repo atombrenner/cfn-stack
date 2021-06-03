@@ -1,7 +1,7 @@
 import { EnvironmentCredentials, SharedIniFileCredentials, EC2MetadataCredentials } from 'aws-sdk'
 import { AWSError, CloudFormation } from 'aws-sdk'
 import { StackEvent, UpdateStackInput, ResourceStatus } from 'aws-sdk/clients/cloudformation'
-import * as wrap from 'word-wrap'
+import wrap from 'word-wrap'
 
 export const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms))
