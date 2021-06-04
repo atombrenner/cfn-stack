@@ -1,6 +1,11 @@
-import { EnvironmentCredentials, SharedIniFileCredentials, EC2MetadataCredentials } from 'aws-sdk'
-import { AWSError, CloudFormation } from 'aws-sdk'
-import { StackEvent, UpdateStackInput, ResourceStatus } from 'aws-sdk/clients/cloudformation'
+import {
+  CloudFormation,
+  StackEvent,
+  UpdateStackInput,
+  ResourceStatus,
+} from '@aws-sdk/client-cloudformation'
+import { defaultProvider } from '@aws-sdk/credential-provider-node'
+//import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts'
 import wrap from 'word-wrap'
 
 export const sleep = (ms: number): Promise<void> =>
@@ -15,7 +20,7 @@ export type StackOptions = {
 export class Stack {
   constructor({ name, region, profile }: StackOptions) {
     this.stack = { StackName: name }
-    const credentials = getCredentials(profile)
+    const credentials = defaultProvider({ profile })
     this.cloudformation = new CloudFormation({ region, credentials })
   }
 
@@ -42,14 +47,14 @@ export class Stack {
     }
     const now = new Date()
     try {
-      await this.cloudformation.updateStack(stackInput).promise()
+      await this.cloudformation.updateStack(stackInput)
       this.logStackAction(now, 'Updating stack')
-      await this.waitFor('UPDATE_COMPLETE', now)
+      await this.waitFor(ResourceStatus.UPDATE_COMPLETE, now)
     } catch (err) {
       if (stackDoesNotExist(err)) {
-        await this.cloudformation.createStack({ OnFailure: 'DELETE', ...stackInput }).promise()
+        await this.cloudformation.createStack({ OnFailure: 'DELETE', ...stackInput })
         this.logStackAction(now, 'Creating new stack')
-        await this.waitFor('CREATE_COMPLETE', now)
+        await this.waitFor(ResourceStatus.CREATE_COMPLETE, now)
       } else if (stackIsUpToDate(err)) {
         this.logStackAction(now, 'No updates needed for stack')
       } else throw err
@@ -59,19 +64,18 @@ export class Stack {
   async waitFor(success: ResourceStatus, start: Date): Promise<void> {
     const stackId = { StackName: await this.getStackId() }
     const shown = new Set<string>()
-    const finished =
-      /(CREATE_COMPLETE|UPDATE_COMPLETE|DELETE_COMPLETE|ROLLBACK_COMPLETE|ROLLBACK_FAILED|CREATE_FAILED|DELETE_FAILED)$/
+    const finished = /(CREATE_COMPLETE|UPDATE_COMPLETE|DELETE_COMPLETE|ROLLBACK_COMPLETE|ROLLBACK_FAILED|CREATE_FAILED|DELETE_FAILED)$/ // TODO: some of the aws-sdk-v2 states are not part of aws-sdk-v3, especially the rollback states
     let status = ''
     while (!status.match(finished)) {
       await sleep(1500)
-      const response = await this.cloudformation.describeStackEvents(stackId).promise()
+      const response = await this.cloudformation.describeStackEvents(stackId)
       const events = response.StackEvents || []
       events
-        .filter((e) => e.Timestamp >= start && !shown.has(e.EventId))
+        .filter((e) => e.Timestamp! >= start && !shown.has(e.EventId!))
         .reverse()
         .forEach((e) => {
           logEvent(e)
-          shown.add(e.EventId)
+          shown.add(e.EventId!)
           if (e.ResourceType === 'AWS::CloudFormation::Stack') {
             status = e.ResourceStatus || ''
           }
@@ -84,7 +88,7 @@ export class Stack {
   }
 
   private async getStackId() {
-    const response = await this.cloudformation.describeStacks(this.stack).promise()
+    const response = await this.cloudformation.describeStacks(this.stack)
     if (!response.Stacks || response.Stacks.length !== 1)
       throw Error(`No StackId for stack "${this.stack.StackName} found`)
 
@@ -93,7 +97,7 @@ export class Stack {
 
   async getOutputs(): Promise<Record<string, string>> {
     const outputs: Record<string, string> = {}
-    const response = await this.cloudformation.describeStacks(this.stack).promise()
+    const response = await this.cloudformation.describeStacks(this.stack)
     if (response.Stacks && response.Stacks.length === 1 && response.Stacks[0].Outputs) {
       response.Stacks[0].Outputs.forEach((o) => {
         if (o.OutputKey && o.OutputValue) {
@@ -106,33 +110,23 @@ export class Stack {
 
   async delete(): Promise<void> {
     const now = new Date()
-    await this.cloudformation.deleteStack(this.stack).promise()
+    await this.cloudformation.deleteStack(this.stack)
     this.logStackAction(now, 'Deleting stack')
-    await this.waitFor('DELETE_COMPLETE', now)
+    await this.waitFor(ResourceStatus.DELETE_COMPLETE, now)
   }
 }
 
-function stackDoesNotExist(err: AWSError): boolean {
-  return err.code === 'ValidationError' && err.message.includes('does not exist')
+function stackDoesNotExist(err: any): boolean {
+  return err.Code === 'ValidationError' && err.message.includes('does not exist')
 }
 
-function stackIsUpToDate(err: AWSError): boolean {
-  return err.code === 'ValidationError' && err.message.includes('No updates are to be performed')
-}
-
-function getCredentials(profile?: string) {
-  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
-    return new EnvironmentCredentials('AWS')
-
-  if (process.env.USER === 'ec2-user') return new EC2MetadataCredentials()
-
-  process.env.AWS_SDK_LOAD_CONFIG = 'true' // This is necessary to load profiles from ~/.aws/config
-  return new SharedIniFileCredentials({ profile })
+function stackIsUpToDate(err: any): boolean {
+  return err.Code === 'ValidationError' && err.message.includes('No updates are to be performed')
 }
 
 function logEvent(e: StackEvent) {
   const props = [
-    fmtTime(e.Timestamp),
+    fmtTime(e.Timestamp!),
     e.ResourceStatus,
     e.ResourceType,
     `"${e.LogicalResourceId}"`,
