@@ -64,7 +64,8 @@ export class Stack {
   async waitFor(success: ResourceStatus, start: Date): Promise<void> {
     const stackId = { StackName: await this.getStackId() }
     const shown = new Set<string>()
-    const finished = /(CREATE_COMPLETE|UPDATE_COMPLETE|DELETE_COMPLETE|ROLLBACK_COMPLETE|ROLLBACK_FAILED|CREATE_FAILED|DELETE_FAILED)$/ // TODO: some of the aws-sdk-v2 states are not part of aws-sdk-v3, especially the rollback states
+    const finished =
+      /(CREATE_COMPLETE|UPDATE_COMPLETE|DELETE_COMPLETE|ROLLBACK_COMPLETE|ROLLBACK_FAILED|CREATE_FAILED|DELETE_FAILED)$/ // TODO: some of the aws-sdk-v2 states are not part of aws-sdk-v3, especially the rollback states
     let status = ''
     while (!status.match(finished)) {
       await sleep(1500)
@@ -139,4 +140,4 @@ function logEvent(e: StackEvent) {
 const fmtReason = (reason?: string): string =>
   reason ? '\n' + wrap(reason, { width: 90, indent: ' '.repeat(9) }) : ''
 
-const fmtTime = (date: Date) => date.toISOString().substr(11, 8)
+const fmtTime = (date: Date) => date.toISOString().substring(11, 19)
