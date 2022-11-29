@@ -5,7 +5,6 @@ import {
   ResourceStatus,
 } from '@aws-sdk/client-cloudformation'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
-//import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts'
 import wrap from 'word-wrap'
 
 export const sleep = (ms: number): Promise<void> =>
