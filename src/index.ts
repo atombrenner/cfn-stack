@@ -13,7 +13,7 @@ export const sleep = (ms: number): Promise<void> =>
 
 export type StackOptions = {
   name: string
-  region: string
+  region?: string
   profile?: string
 }
 
