@@ -1,6 +1,6 @@
 {
   "name": "@atombrenner/cfn-stack",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Manage Cloudformation Stacks with Typescript",
   "author": "Christian Rodemeyer <atombrenner@gmail.com>",
   "license": "MIT",
