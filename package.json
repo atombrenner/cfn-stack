@@ -15,10 +15,10 @@
     "prepack": "npm run build",
     "build": "tsc",
     "clean": "rm -rf dist",
-    "stack": "ts-node -T test/stack.ts"
+    "stack": "tsx test/stack.ts"
   },
   "engines": {
-    "node": ">=16.0.0",
+    "node": ">=20.0.0",
     "npm": ">=8.0.0"
   },
   "dependencies": {
@@ -27,10 +27,10 @@
     "word-wrap": "^1.2.3"
   },
   "devDependencies": {
-    "@tsconfig/node16": "1.x",
-    "@types/node": "16.x",
-    "prettier": "^2.8.8",
-    "ts-node": "^10.0.0",
-    "typescript": "^5.1.3"
+    "@tsconfig/node20": "20.x",
+    "@types/node": "20.x",
+    "prettier": "3.x",
+    "tsx": "4.x",
+    "typescript": "5.x"
   }
 }

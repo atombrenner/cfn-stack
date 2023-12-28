@@ -1,3 +1,4 @@
+import { setTimeout } from 'timers/promises'
 import {
   CloudFormation,
   StackEvent,
@@ -6,9 +7,6 @@ import {
 } from '@aws-sdk/client-cloudformation'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import wrap from 'word-wrap'
-
-export const sleep = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms))
 
 export type StackOptions = {
   name: string
@@ -67,7 +65,7 @@ export class Stack {
       /(CREATE_COMPLETE|UPDATE_COMPLETE|DELETE_COMPLETE|ROLLBACK_COMPLETE|ROLLBACK_FAILED|CREATE_FAILED|DELETE_FAILED)$/ // TODO: some of the aws-sdk-v2 states are not part of aws-sdk-v3, especially the rollback states
     let status = ''
     while (!status.match(finished)) {
-      await sleep(1500)
+      await setTimeout(1500)
       const response = await this.cloudformation.describeStackEvents(stackId)
       const events = response.StackEvents || []
       events

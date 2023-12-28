@@ -2,12 +2,16 @@
 
 Manage CloudFormation Stacks with Typescript
 
+### Installation
+
+`npm i -D @atombrenner/cfn-stack`
+
 ### Usage
 
 ```typescript
 import { Stack } from '@atombrenner/cfn-stack'
 import * as fs from 'fs'
-//
+
 async function main() {
   const stack = new Stack({ name: 'cfn-stack-test', region: 'eu-west-1', profile: 'atombrenner' })
   const template = fs.readFileSync('./cloudformation.yaml', { encoding: 'utf-8' })
