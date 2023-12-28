@@ -3,7 +3,7 @@
   "version": "2.2.0",
   "description": "Manage Cloudformation Stacks with Typescript",
   "author": "Christian Rodemeyer <atombrenner@gmail.com>",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "homepage": "https://github.com/atombrenner/cfn-stack#readme",
   "repository": "github:atombrenner/cfn-stack",
   "main": "./dist/index.js",
